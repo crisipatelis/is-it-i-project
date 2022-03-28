@@ -117,3 +117,13 @@ for sequence in processed_fastq_files:
     for i in range(len(sequence)):
         command_line = 'FastQC/fastqc -j ~/jdk-18/bin/java -o '+fastqc_reports_dir+' '+sequence[i]
         os.system(command_line)
+
+### RUNNING BOWTIE2 TO MAP READS TO REFERENCE GENOME ###
+
+# create a directory containing all output files
+if not os.path.isdir(current_dir+'/output_files'):
+    os.makedir(current_dir+'/output_file')
+output_files_dir = current_dir+'/output_file'
+
+# create a bowtie2 index to map to (the database name is Reference_Genome)
+build_bowtie_command = "bowtie-build "+ current_dir/fasta_files + output_files_dir/Reference_Genome 
