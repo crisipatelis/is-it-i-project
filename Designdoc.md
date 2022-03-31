@@ -111,5 +111,4 @@ The following proposed solution is not final and can be modified if necessary.
     4. Our pipeline, alongside all its dependencies, will be contained within a Docker image container. This way, users can use it regardless of operating system. This also facilitates the usage of our tool by those who are not familiar with bioinformatics analyzes. 
 
 A graphical representation of our proposed solution is included below:
-https://keep.google.com/u/0/media/v2/14EdmixlP_wfW1giXVYf3lNqDF_VECselOC1KO2-zVBZiit80m2AVAqDbj4hSIyA/1ZgG41h8EoXc1CakI8R_dQN6plMurw3c1k5TtI8q_OqcbPyPDipZ--hPH7jl-Hbk?sz=512&accept=image%2Fgif%2Cimage%2Fjpeg%2Cimage%2Fjpg%2Cimage%2Fpng%2Cimage%2Fwebp
-https://keep.google.com/u/0/media/v2/14EdmixlP_wfW1giXVYf3lNqDF_VECselOC1KO2-zVBZiit80m2AVAqDbj4hSIyA/1ZgG41h8EoXc1CakI8R_dQN6plMurw3c1k5TtI8q_OqcbPyPDipZ--hPH7jl-Hbk?sz=512&accept=image%2Fgif%2Cimage%2Fjpeg%2Cimage%2Fjpg%2Cimage%2Fpng%2Cimage%2Fwebp
+![IsItI graphical description](https://keep.google.com/u/0/media/v2/14EdmixlP_wfW1giXVYf3lNqDF_VECselOC1KO2-zVBZiit80m2AVAqDbj4hSIyA/1ZgG41h8EoXc1CakI8R_dQN6plMurw3c1k5TtI8q_OqcbPyPDipZ--hPH7jl-Hbk?sz=512&accept=image%2Fgif%2Cimage%2Fjpeg%2Cimage%2Fjpg%2Cimage%2Fpng%2Cimage%2Fwebp)
