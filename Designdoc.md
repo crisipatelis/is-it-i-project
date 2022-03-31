@@ -111,4 +111,4 @@ The following proposed solution is not final and can be modified if necessary.
     4. Our pipeline, alongside all its dependencies, will be contained within a Docker image container. This way, users can use it regardless of operating system. This also facilitates the usage of our tool by those who are not familiar with bioinformatics analyzes. 
 
 A graphical representation of our proposed solution is included below:
-![IsItI Project Graphic]( https://drive.google.com/file/d/1WmfqKVje2zlkEEDnMfcyXxlV0I6zOfOi/view?usp=sharing )
+https://drive.google.com/file/d/1WmfqKVje2zlkEEDnMfcyXxlV0I6zOfOi/view?usp=sharing
