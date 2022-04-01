@@ -91,7 +91,7 @@ fastqc_reports_dir = current_dir+'/fastqc_reports'
 # run FastQC for each fastq file, separately (even paired-ends)
 for sequence in fastq_files:
     for i in range(len(sequence)):
-        command_line = 'FastQC/fastqc -j ~/jdk-18/bin/java -o '+fastqc_reports_dir+' '+sequence[i]
+        command_line = 'FastQC/fastqc -j jdk-18/bin/java -o '+fastqc_reports_dir+' '+sequence[i]
         os.system(command_line)
 
 ### RUNNING TRIMMOMATIC ###
@@ -100,30 +100,48 @@ processed_fastq_files = []
 for sequence in fastq_files: # for every fastq item file in the list
     if len(sequence) == 1: # check if it is single-end
         sequence_name = sequence[0].replace('.fq.gz','').replace('.fastq.gz','') # get file name without the extension
-        command_line = '~/jdk-18/bin/java -jar ~/Trimmomatic-0.39/trimmomatic-0.39.jar SE -phred33 '+sequence[0]+' '+sequence_name+'_out.fq.gz ILLUMINACLIP:TruSeq3-SE:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36'
+        command_line = 'jdk-18/bin/java -jar Trimmomatic-0.39/trimmomatic-0.39.jar SE -phred33 '+sequence[0]+' '+sequence_name+'_out.fq.gz ILLUMINACLIP:'+current_dir+'/Trimmomatic-0.39/adapters/TruSeq3-SE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36'
         os.system(command_line)
-        processed_fastq_files.append(sequence_name+'_out.fq.gz') # append output file name to list
+        processed_fastq_files.append([sequence_name+'_out.fq.gz']) # append output file name to list
     else: # else, it is paired-end
         sequence0_name = sequence[0].replace('.fq.gz','').replace('.fastq.gz','') # get file name without the extension
         sequence1_name = sequence[1].replace('.fq.gz','').replace('.fastq.gz','') # get file name without the extension
-        command_line = '~/jdk-18/bin/java -jar ~/Trimmomatic-0.39/trimmomatic-0.39.jar PE '+sequence[0]+' '+sequence[1]+' '+sequence0_name+'_paired_out.fq.gz '+sequence0_name+'_unpaired_out.fq.gz '+sequence1_name+'_paired_out.fq.gz '+sequence1_name+'_unpaired_out.fq.gz ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:36'
+        command_line = 'jdk-18/bin/java -jar Trimmomatic-0.39/trimmomatic-0.39.jar PE -phred33 '+sequence[0]+' '+sequence[1]+' '+sequence0_name+'_out.fq.gz '+sequence0_name+'_unpaired_out.fq.gz '+sequence1_name+'_out.fq.gz '+sequence1_name+'_unpaired_out.fq.gz ILLUMINACLIP:'+current_dir+'/Trimmomatic-0.39/adapters/TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36'
         os.system(command_line)
-        processed_fastq_files.append([sequence0_name+'_paired_out.fq.gz', sequence1_name+'_paired_out.fq.gz']) # append output file name to list
+        processed_fastq_files.append([sequence0_name+'_out.fq.gz', sequence1_name+'_out.fq.gz']) # append output file name to list
 
 ### RUNNING FASTQC ON FILTERED SEQUENCES ###
 
 # run FastQC for each fastq file, separately (even paired-ends)
 for sequence in processed_fastq_files:
     for i in range(len(sequence)):
-        command_line = 'FastQC/fastqc -j ~/jdk-18/bin/java -o '+fastqc_reports_dir+' '+sequence[i]
+        command_line = 'FastQC/fastqc -j jdk-18/bin/java -o '+fastqc_reports_dir+' '+sequence[i]
         os.system(command_line)
 
 ### RUNNING BOWTIE2 TO MAP READS TO REFERENCE GENOME ###
 
-# create a directory containing all output files
-if not os.path.isdir(current_dir+'/output_files'):
-    os.makedir(current_dir+'/output_file')
-output_files_dir = current_dir+'/output_file'
+# checking if bowtie folder exists. creates one if it doesn't. 
+if not os.path.isdir(current_dir+'/bowtie_files'):
+    os.makedirs(current_dir+'/bowtie_files')
+bowtie_files_dir = current_dir+'/bowtie_files'
 
-# create a bowtie2 index to map to (the database name is Reference_Genome)
-build_bowtie_command = "bowtie-build "+ current_dir/fasta_files + output_files_dir/Reference_Genome 
+# create a bowtie2 index to map to for each reference fasta file
+for reference_file in fasta_files: # for each fasta file in the list
+    file_name = reference_file.replace('.fasta','').replace('.fa','') # remove extension to get file name
+    command_line = 'bowtie2-2.4.5-linux-x86_64/bowtie2-build '+reference_file+' '+bowtie_files_dir+'/'+file_name
+    os.system(command_line) # runs bowtie2-build
+
+# mapping fastq files to reference genomes 
+sam_files = [] 
+for sequence in processed_fastq_files: # for each sample fastq file (QC'd)
+    for reference in fasta_files: #  for each reference genome
+        seq_file_name = sequence[0].replace('_out.fq.gz','') # remove extension to get file name
+        ref_file_name = reference.replace('.fasta','').replace('.fa','') # remove extension to get file name
+        if len(sequence) == 1: # check if fastq file is single-end
+            command_line = 'bowtie2-2.4.5-linux-x86_64/bowtie2 -x '+bowtie_files_dir+'/'+ref_file_name+' -U '+sequence[0]+' -S '+seq_file_name+'_mappedto_'+ref_file_name+'.sam'
+            sam_files.append(seq_file_name+'_mappedto_'+ref_file_name+'.sam') # append output SAM file name to list
+            os.system(command_line) # runs bowtie2
+        else: # else, it is paired-end
+            command_line = 'bowtie2-2.4.5-linux-x86_64/bowtie2 -x '+bowtie_files_dir+'/'+ref_file_name+' -1 '+sequence[0]+' -2 '+sequence[1]+' -S '+seq_file_name+'_mappedto_'+ref_file_name+'.sam'
+            sam_files.append(seq_file_name+'_mappedto_'+ref_file_name+'.sam') # append output SAM file name to list
+            os.system(command_line) # runs bowtie2
