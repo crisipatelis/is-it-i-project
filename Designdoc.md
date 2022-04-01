@@ -32,30 +32,22 @@ A crucial step after sequencing DNA in a sample is to determine which species se
 
 **Context** 
 
-          When identifying a species of interest within a given sample, there are two particular challenges that arise. The first challenge is that genomes cannot be assembled for each organism in order to identify them. With the number of organisms that may be contained within a particular sample, it is both inefficient and infeasible to sequence the genomes of each and compare them to a reference genome. The second problem is that closely related species need to be differentiated, which can be challenging when they have similar genomic compositions. 
-
-	Our pipeline is necessary because it aims to combat these challenges. The project will map reads to a given reference genome from a species of interest or to gene markers. In doing so, shorter reads are compared to the larger reference genome to analyze how much coverage matches. The user will be able to identify if their species of interest is present if enough reads are mapped against the genome. This solves a way to both compare sequence reads to a species of interest’s genome (without assembling all other genomes) and distinguish it from other closely related species based on a required amount of mapping coverage. 
-
-	
+When identifying a species of interest within a given sample, there are two particular challenges that arise. The first challenge is that genomes cannot be assembled for each organism in order to identify them. With the number of organisms that may be contained within a particular sample, it is both inefficient and infeasible to sequence the genomes of each and compare them to a reference genome. The second problem is that closely related species need to be differentiated, which can be challenging when they have similar genomic compositions. 
+ 
+Our pipeline is necessary because it aims to combat these challenges. The project will map reads to a given reference genome from a species of interest or to gene markers. In doing so, shorter reads are compared to the larger reference genome to analyze how much coverage matches. The user will be able to identify if their species of interest is present if enough reads are mapped against the genome. This solves a way to both compare sequence reads to a species of interest’s genome (without assembling all other genomes) and distinguish it from other closely related species based on a required amount of mapping coverage. 
 
 **Goals & Non-Goals**
 
 The goals for this project are:
-
-
 
 * Develop a pipeline in Python to identify whether species of interest are present in NGS fastq files.
 * For a more user-friendly implementation, this pipeline along with all its dependencies will be contained within a Docker image container. 
 
 The non-goals for this project are:
 
-
-
 * This project does not aim to build new assembly or mapping softwares. 
 
 **Milestones**
-
-
 
 * Monday, March 21st:
     * Design document should be finished.
@@ -89,26 +81,24 @@ The non-goals for this project are:
 
 The following proposed solution is not final and can be modified if necessary. 
 
-
-
 1. User inputs:
-    1. The user will provide fastq files, which may or may not contain sequences derived from the species of interest.
-        1. We expect that often users will provide raw fastq files. Thus, they should undergo QC processing, such as removal of adapter sequences and filtering low quality reads (suggestion of tool to use: Trimmomatic, BBDuk). 
-        2. We may want to assess quality parameters, such as number of reads and overall read quality before and after QC, and return this to the user (using FastQC).
-        3. The pipeline we design should be able to handle taking multiple fastq files as input. For this, the user will either supply the name of a single fastq file, or a text file containing the names of multiple fastq files - one file name per line. If the user provides more than one fastq file, they will be processed one at a time. If there are paired samples, file names should be on the same line in the text file, separated by a space character. 
-    2. The user will also provide fasta files or accession codes corresponding to the species of interest.
-        4. There will be no processing of sequences in the fasta files; they will be used as is.
-        5. The pipeline should be able to handle multi-fasta files as well, as long as all sequences within the multi-fasta file belong to the same organism (multiple contigs).
-        6. The pipeline we design should be able to handle taking multiple fasta files as input. For this, the user will either supply the name of a single fasta file, or a text file containing the names of multiple fasta files - one file name per line. If the user provides more than one fasta file, they will be processed one at a time.  
-        7. If accession codes are provided instead of fasta files, the handling process will be similar to the described on 1.b.iii - the user can either supply a single accession code, or a text file containing multiple accession codes, one per line. Accession codes supplied should match NCBI’s database. 
+   - a. The user will provide fastq files, which may or may not contain sequences derived from the species of interest.
+     - i. We expect that often users will provide raw fastq files. Thus, they should undergo QC processing, such as removal of adapter sequences and filtering low quality reads (suggestion of tool to use: Trimmomatic, BBDuk). 
+     - ii. We may want to assess quality parameters, such as number of reads and overall read quality before and after QC, and return this to the user (using FastQC).
+     - iii. The pipeline we design should be able to handle taking multiple fastq files as input. For this, the user will either supply the name of a single fastq file, or a text file containing the names of multiple fastq files - one file name per line. If the user provides more than one fastq file, they will be processed one at a time. If there are paired samples, file names should be on the same line in the text file, separated by a space character. 
+   - b. The user will also provide fasta files or accession codes corresponding to the species of interest.
+     - i. There will be no processing of sequences in the fasta files; they will be used as is.
+     - ii. The pipeline should be able to handle multi-fasta files as well, as long as all sequences within the multi-fasta file belong to the same organism (multiple contigs).
+     - iii. The pipeline we design should be able to handle taking multiple fasta files as input. For this, the user will either supply the name of a single fasta file, or a text file containing the names of multiple fasta files - one file name per line. If the user provides more than one fasta file, they will be processed one at a time.  
+     - iv. If accession codes are provided instead of fasta files, the handling process will be similar to the described on 1.b.iii - the user can either supply a single accession code, or a text file containing multiple accession codes, one per line. Accession codes supplied should match NCBI’s database. 
 2. Assessing presence of species of interest:
-    3. As previously mentioned, we will not be relying on assembly-based methods to identify species of interest. Rather, we will be using a mapping approach. 
-        8. After the initial QC, processed fastq reads will be mapped to the genomes of interest provided by the user. For this, we will look for in the literature benchmarking studies of mapping tools and identify which one is the most commonly recommended based on less memory usage, faster x, and higher accuracy. Suggestions include Bowtie2, BWA, and SOAP2. 
-        9. If fastq files provided are paired ends, they will be aligned first, and then mapped to the reference genomes.
-        10. We will assess important statistics such as number of reads mapped to the genome (in percentage) and mapping coverage of the genome using SAMtools, and provide those metrics to the user. The two aforementioned metrics are essential because by analyzing them, the user will know whether the species of interest are in the fastq files provided. 
-        11. If multiple fastq files were provided, and if multiple reference fasta files/accession codes were provided as well, each fastq-fasta pair will be analyzed individually, but at the end, all results (mentioned in 2.a.ii) will be summarized in a single output file to facilitate user interpretation. 
+   - a. As previously mentioned, we will not be relying on assembly-based methods to identify species of interest. Rather, we will be using a mapping approach. 
+     - i. After the initial QC, processed fastq reads will be mapped to the genomes of interest provided by the user. For this, we will look for in the literature benchmarking studies of mapping tools and identify which one is the most commonly recommended based on less memory usage, faster x, and higher accuracy. Suggestions include Bowtie2, BWA, and SOAP2. 
+     - ii. If fastq files provided are paired ends, they will be aligned first, and then mapped to the reference genomes.
+     - iii. We will assess important statistics such as number of reads mapped to the genome (in percentage) and mapping coverage of the genome using SAMtools, and provide those metrics to the user. The two aforementioned metrics are essential because by analyzing them, the user will know whether the species of interest are in the fastq files provided. 
+     - iv. If multiple fastq files were provided, and if multiple reference fasta files/accession codes were provided as well, each fastq-fasta pair will be analyzed individually, but at the end, all results (mentioned in 2.a.iii) will be summarized in a single output file to facilitate user interpretation. 
 3. Portability of our tool:
-    4. Our pipeline, alongside all its dependencies, will be contained within a Docker image container. This way, users can use it regardless of operating system. This also facilitates the usage of our tool by those who are not familiar with bioinformatics analyzes. 
+   - a. Our pipeline, alongside all its dependencies, will be contained within a Docker image container. This way, users can use it regardless of operating system. This also facilitates the usage of our tool by those who are not familiar with bioinformatics analyzes. 
 
 A graphical representation of our proposed solution is included below:
-![IsItI Code Graphic] (https://drive.google.com/uc?export=view&id=1WmfqKVje2zlkEEDnMfcyXxlV0I6zOfOi)
+![IsItI Code Graphic](https://drive.google.com/uc?export=view&id=1WmfqKVje2zlkEEDnMfcyXxlV0I6zOfOi)
