@@ -133,7 +133,9 @@ for reference_file in fasta_files: # for each fasta file in the list
 
 # mapping fastq files to reference genomes 
 sam_files = [] 
+sequence_names = []
 for sequence in processed_fastq_files: # for each sample fastq file (QC'd)
+    sequence_names = sequence_names.append(sequence) ###adding sequence names to list for the SAMtools output ####
     for reference in fasta_files: #  for each reference genome
         seq_file_name = sequence[0].replace('_out.fq.gz','') # remove extension to get file name
         ref_file_name = reference.replace('.fasta','').replace('.fa','') # remove extension to get file name
@@ -145,3 +147,9 @@ for sequence in processed_fastq_files: # for each sample fastq file (QC'd)
             command_line = 'bowtie2-2.4.5-linux-x86_64/bowtie2 -x '+bowtie_files_dir+'/'+ref_file_name+' -1 '+sequence[0]+' -2 '+sequence[1]+' -S '+seq_file_name+'_mappedto_'+ref_file_name+'.sam'
             sam_files.append(seq_file_name+'_mappedto_'+ref_file_name+'.sam') # append output SAM file name to list
             os.system(command_line) # runs bowtie2
+
+### Running SAMTOOLS to DETERMINE Sequence Coverage of Reference Genome ###
+
+for i in range(len(sam_files)): #run through all SAM files
+    sam_flagstat_command = ‘samtools flagstat ‘ + sam_files[i] + ‘ -o current_dir sam_’ + Sequence_file_names[i] + ‘_statsout.tsv’ #create the samtools flagstat command
+    os.system(sam_flagstat_command) #write command out to os.system
