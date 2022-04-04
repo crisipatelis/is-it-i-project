@@ -151,7 +151,7 @@ for sequence in processed_fastq_files: # for each sample fastq file (QC'd)
 ### Running SAMTOOLS to DETERMINE Sequence Coverage of Reference Genome ###
 
 for i in range(len(sam_files)): #run through all SAM files
-    sam_flagstat_command = ‘samtools flagstat ‘ + sam_files[i] + ‘ -o current_dir sam_’ + sequence_names[i] + ‘_statsout.tsv’ #create the samtools flagstat command
+    sam_flagstat_command = 'samtools flagstat ' + sam_files[i] + ' -o current_dir sam_' + sequence_names[i] + '_statsout.tsv’ #create the samtools flagstat command
     os.system(sam_flagstat_command) #write command out to os.system
 
 
