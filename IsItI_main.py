@@ -133,7 +133,9 @@ for reference_file in fasta_files: # for each fasta file in the list
 
 # mapping fastq files to reference genomes 
 sam_files = [] 
+sequence_names = []
 for sequence in processed_fastq_files: # for each sample fastq file (QC'd)
+    sequence_names = sequence_names.append(sequence) ###adding sequence names to list for the SAMtools output ####
     for reference in fasta_files: #  for each reference genome
         seq_file_name = sequence[0].replace('_out.fq.gz','') # remove extension to get file name
         ref_file_name = reference.replace('.fasta','').replace('.fa','') # remove extension to get file name
@@ -148,3 +150,6 @@ for sequence in processed_fastq_files: # for each sample fastq file (QC'd)
 
 ### Running SAMTOOLS to DETERMINE Sequence Coverage of Reference Genome ###
 
+for i in range(len(sam_files)):
+    sam_flagstat_command = ‘samtools flagstat ‘ + sam_files[i] + ‘ -o current_dir sam_’ + Sequence_file_names[i] + ‘_statsout.tsv’
+    os.system(sam_flagstat_command)
