@@ -162,3 +162,9 @@ for sam_file in sam_files: #iterate through each SAM file and convert to BAM fil
     bam_files.append(bam_file) #append the bam file name to the list
     sam_to_bam = "samtools view " + sam_file + " > " + bam_file #command to convert sam file to bam file 
     os.system(sam_to_bam) #os call to run sam_to_bam command
+
+#run mpileup
+for reference in fasta_files: #for each reference fasta file stored in fasta_files
+    for bam_file in bam_files: #for each bam file stored in bam_files
+        mpileup_command = "samtools mpileup -f " + reference + " " + bam_file #create mpileupcommand and input each reference fasta and bam file
+        os.system(mpileup_command) #os call to run mpileup command
