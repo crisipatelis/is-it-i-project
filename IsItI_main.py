@@ -145,3 +145,6 @@ for sequence in processed_fastq_files: # for each sample fastq file (QC'd)
             command_line = 'bowtie2-2.4.5-linux-x86_64/bowtie2 -x '+bowtie_files_dir+'/'+ref_file_name+' -1 '+sequence[0]+' -2 '+sequence[1]+' -S '+seq_file_name+'_mappedto_'+ref_file_name+'.sam'
             sam_files.append(seq_file_name+'_mappedto_'+ref_file_name+'.sam') # append output SAM file name to list
             os.system(command_line) # runs bowtie2
+
+### Running SAMTOOLS to DETERMINE Sequence Coverage of Reference Genome ###
+
