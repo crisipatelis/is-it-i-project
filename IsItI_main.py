@@ -153,3 +153,12 @@ for sequence in processed_fastq_files: # for each sample fastq file (QC'd)
 for i in range(len(sam_files)): #run through all SAM files
     sam_flagstat_command = ‘samtools flagstat ‘ + sam_files[i] + ‘ -o current_dir sam_’ + sequence_names[i] + ‘_statsout.tsv’ #create the samtools flagstat command
     os.system(sam_flagstat_command) #write command out to os.system
+
+
+bam_files = [] #create a new list that will contain converted BAM files
+
+for sam_file in sam_files: #iterate through each SAM file and convert to BAM file
+    bam_file = sam_file[:-4] + ".bam" #accesses name of sam file without extension and adds .bam extension
+    bam_files.append(bam_file) #append the bam file name to the list
+    sam_to_bam = "samtools view " + sam_file + " > " + bam_file #command to convert sam file to bam file 
+    os.system(sam_to_bam) #os call to run sam_to_bam command
