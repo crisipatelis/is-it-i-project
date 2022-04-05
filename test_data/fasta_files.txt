@@ -1,2 +1,0 @@
-NC_001538.fasta
-NC_001699.fasta
