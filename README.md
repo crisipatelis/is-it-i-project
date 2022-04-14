@@ -8,7 +8,7 @@ Our `Is it I?` pipeline avoids those challanges because it follows a different a
 
 ## Implementation
 
-Our `Is it I?` pipeline is written entirely in Python3 to be used in Linux OS, and uses well-maintained bioinformatics tools. Furthermore, our pipeline will be available at Docker Hub Repository, which means that users can use our tool regardless of OS, without having to worry about installing all dependencies. Our pipeline utilizes the following tools:
+Our `Is it I?` pipeline is written entirely in Python3, and uses well-maintained bioinformatics tools. Furthermore, our pipeline is available at [Docker Hub Repository](https://hub.docker.com/r/danielsarj/isiti), which means that users can use our tool regardless of OS, without having to worry about installing all dependencies. Our pipeline utilizes the following tools:
 
 * [Biopython](https://biopython.org/)
 * [Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml)
@@ -18,7 +18,7 @@ Our `Is it I?` pipeline is written entirely in Python3 to be used in Linux OS, a
 
 ## Instructions
 
-(To be added.)
+For an in-depth walkthrough on how to run our pipeline using the test data available, please check our [wiki](https://github.com/danielsarj/is-it-i-project/wiki/IsItI:-pipeline-walkthrough). 
 
 ## Credits
 

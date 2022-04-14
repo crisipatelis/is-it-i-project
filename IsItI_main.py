@@ -6,7 +6,7 @@ import argparse
 import os
 from Bio import Entrez
 from Bio import SeqIO
-Entrez.email = 'A.N.Other@example.com' 
+Entrez.email = 'A.N.Other@example.com'
 
 def check_arg(args=None): # define possible parameters that can be used
     parser = argparse.ArgumentParser()
@@ -43,22 +43,22 @@ if not (args.reference != None or args.txtr != None or args.accession != None or
 
 #fastq files
 if args.single != None: # check if single-end file was provided
-    fastq_files = [args.single] # append file name to list
+    fastq_files = [[args.single]] # append file name to list
 elif args.pair1 != None and args.pair2 != None: # check if paired-end file was provided
     fastq_files = [[args.pair1, args.pair2]]  # append list of file names to list (yes, a list inside of a list)
 elif args.txts != None: # check if text file with fastq files was provided
     with open(args.txts) as input_fastq_file:
-        lines = input_fastq_file.readlines() # read text file into a list 
+        lines = input_fastq_file.readlines() # read text file into a list
         lines = [i.rstrip() for i in lines] # remove newline character
-        lines = [i.split(' ') for i in lines] # if paired end files are in the text file, splits item in list by space 
-        fastq_files = lines 
+        lines = [i.split(' ') for i in lines] # if paired end files are in the text file, splits item in list by space
+        fastq_files = lines
 
 #fasta files
 if args.reference != None: # check if reference fasta file was provided
     fasta_files = [args.reference] # append file name to list
 elif args.txtr != None: # check if text file with reference fasta files was provided
     with open(args.txtr) as input_fasta_file:
-        lines = input_fasta_file.readlines() # read text file into a list 
+        lines = input_fasta_file.readlines() # read text file into a list
         lines = [i.rstrip() for i in lines] # remove newline character
         fasta_files = lines
 
@@ -81,20 +81,26 @@ elif args.txta != None: # check if text file with reference accession codes was 
                 reference_fasta.write(record)
             fasta_files.append(item+'.fasta') # append file name to list
 
-log_output = open('IsItI_log.txt', 'w') # create and open log file
+# checking if results folder exists. creates one if it doesn't.
+current_dir = os.getcwd()
+if not os.path.isdir(current_dir+'/IsItI_results'):
+    os.makedirs(current_dir+'/IsItI_results')
+results_dir = current_dir+'/IsItI_results'
+
+log_output = open(results_dir+'/IsItI.log', 'w') # create and open log file
 
 ### RUNNING FASTQC ###
 
-# checking if FastQC report folder exists. creates one if it doesn't. 
+# checking if FastQC report folder exists. creates one if it doesn't.
 current_dir = os.getcwd()
-if not os.path.isdir(current_dir+'/fastqc_reports'):
-    os.makedirs(current_dir+'/fastqc_reports')
-fastqc_reports_dir = current_dir+'/fastqc_reports'
+if not os.path.isdir(results_dir+'/fastqc_reports'):
+    os.makedirs(results_dir+'/fastqc_reports')
+fastqc_reports_dir = results_dir+'/fastqc_reports'
 
 # run FastQC for each fastq file, separately (even paired-ends)
 for sequence in fastq_files:
     for i in range(len(sequence)):
-        command_line = 'FastQC/fastqc -j jdk-18/bin/java -o '+fastqc_reports_dir+' '+sequence[i]
+        command_line = 'fastqc -o '+fastqc_reports_dir+' '+sequence[i]
         os.system(command_line)
 log_output.write('Initial sample file quality assessment successfully finalized. Results can be found in the "fastqc_reports" folder\n') # write into log file
 
@@ -104,14 +110,14 @@ processed_fastq_files = []
 for sequence in fastq_files: # for every fastq item file in the list
     if len(sequence) == 1: # check if it is single-end
         sequence_name = sequence[0].replace('.fq.gz','').replace('.fastq.gz','') # get file name without the extension
-        command_line = 'jdk-18/bin/java -jar Trimmomatic-0.39/trimmomatic-0.39.jar SE -phred33 '+sequence[0]+' '+sequence_name+'_out.fq.gz ILLUMINACLIP:'+current_dir+'/Trimmomatic-0.39/adapters/TruSeq3-SE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36'
+        command_line = 'java -jar usr/share/java/trimmomatic-0.39.jar SE -phred33 '+sequence[0]+' '+sequence_name+'_out.fq.gz ILLUMINACLIP:usr/share/trimmomatic//TruSeq3-SE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36'
         os.system(command_line)
         processed_fastq_files.append([sequence_name+'_out.fq.gz']) # append output file name to list
         log_output.write(sequence_name+" successfully QC'd.\n") # write into log file
     else: # else, it is paired-end
         sequence0_name = sequence[0].replace('.fq.gz','').replace('.fastq.gz','') # get file name without the extension
         sequence1_name = sequence[1].replace('.fq.gz','').replace('.fastq.gz','') # get file name without the extension
-        command_line = 'jdk-18/bin/java -jar Trimmomatic-0.39/trimmomatic-0.39.jar PE -phred33 '+sequence[0]+' '+sequence[1]+' '+sequence0_name+'_out.fq.gz '+sequence0_name+'_unpaired_out.fq.gz '+sequence1_name+'_out.fq.gz '+sequence1_name+'_unpaired_out.fq.gz ILLUMINACLIP:'+current_dir+'/Trimmomatic-0.39/adapters/TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36'
+        command_line = 'java -jar usr/share/java/trimmomatic-0.39.jar PE -phred33 '+sequence[0]+' '+sequence[1]+' '+sequence0_name+'_out.fq.gz '+sequence0_name+'_unpaired_out.fq.gz '+sequence1_name+'_out.fq.gz '+sequence1_name+'_unpaired_out.fq.gz ILLUMINACLIP:usr/share/trimmomatic/TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36'
         os.system(command_line)
         processed_fastq_files.append([sequence0_name+'_out.fq.gz', sequence1_name+'_out.fq.gz']) # append output file name to list
         log_output.write(sequence0_name+" and "+sequence1_name+" successfully QC'd.\n") # write into log file
@@ -121,13 +127,13 @@ for sequence in fastq_files: # for every fastq item file in the list
 # run FastQC for each fastq file, separately (even paired-ends)
 for sequence in processed_fastq_files:
     for i in range(len(sequence)):
-        command_line = 'FastQC/fastqc -j jdk-18/bin/java -o '+fastqc_reports_dir+' '+sequence[i]
+        command_line = 'fastqc -o '+fastqc_reports_dir+' '+sequence[i]
         os.system(command_line)
 log_output.write('Sample file quality assessment after QC successfully finalized. Results can be found in the "fastqc_reports" folder\n') # write into log file
 
 ### RUNNING BOWTIE2 TO MAP READS TO REFERENCE GENOME ###
 
-# checking if bowtie folder exists. creates one if it doesn't. 
+# checking if bowtie folder exists. creates one if it doesn't.
 if not os.path.isdir(current_dir+'/bowtie_files'):
     os.makedirs(current_dir+'/bowtie_files')
 bowtie_files_dir = current_dir+'/bowtie_files'
@@ -135,7 +141,7 @@ bowtie_files_dir = current_dir+'/bowtie_files'
 # create a bowtie2 index to map to for each reference fasta file
 for reference_file in fasta_files: # for each fasta file in the list
     file_name = reference_file.replace('.fasta','').replace('.fa','') # remove extension to get file name
-    command_line = 'bowtie2-2.4.5-linux-x86_64/bowtie2-build '+reference_file+' '+bowtie_files_dir+'/'+file_name
+    command_line = 'bowtie2-build '+reference_file+' '+bowtie_files_dir+'/'+file_name
     os.system(command_line) # runs bowtie2-build
 
 # mapping fastq files to reference genomes 
@@ -152,11 +158,11 @@ for sequence in processed_fastq_files: # for each sample fastq file (QC'd)
             sample_to_reference[seq_file_name].append(ref_file_name) # just add a new reference to the values
 
         if len(sequence) == 1: # check if fastq file is single-end
-            command_line = 'bowtie2-2.4.5-linux-x86_64/bowtie2 -x '+bowtie_files_dir+'/'+ref_file_name+' -U '+sequence[0]+' -S '+seq_file_name+'_mappedto_'+ref_file_name+'.sam'
+            command_line = 'bowtie2 -x '+bowtie_files_dir+'/'+ref_file_name+' -U '+sequence[0]+' -S '+seq_file_name+'_mappedto_'+ref_file_name+'.sam'
             sam_files.append(seq_file_name+'_mappedto_'+ref_file_name+'.sam') # append output SAM file name to list
             os.system(command_line) # runs bowtie2
         else: # else, it is paired-end
-            command_line = 'bowtie2-2.4.5-linux-x86_64/bowtie2 -x '+bowtie_files_dir+'/'+ref_file_name+' -1 '+sequence[0]+' -2 '+sequence[1]+' -S '+seq_file_name+'_mappedto_'+ref_file_name+'.sam'
+            command_line = 'bowtie2 -x '+bowtie_files_dir+'/'+ref_file_name+' -1 '+sequence[0]+' -2 '+sequence[1]+' -S '+seq_file_name+'_mappedto_'+ref_file_name+'.sam'
             sam_files.append(seq_file_name+'_mappedto_'+ref_file_name+'.sam') # append output SAM file name to list
             os.system(command_line) # runs bowtie2
         log_output.write(seq_file_name+' successfully mapped to '+ref_file_name+'\n') # write into log file
@@ -167,9 +173,9 @@ for sequence in processed_fastq_files: # for each sample fastq file (QC'd)
 bam_files = [] # create a new list that will contain converted BAM files
 for sam_file in sam_files: # iterate through each SAM file and convert to BAM file
     bam_file = sam_file.replace('.sam','.bam') # replace extension
-    sam_to_bam = './samtools-1.9/samtools view -Sb '+sam_file+' > '+bam_file # command to convert sam file to bam file 
-    sort_bam = './samtools-1.9/samtools sort '+bam_file+' -o '+bam_file.replace('.bam','.sort.bam') # command to sort bam file 
-    index_bam = './samtools-1.9/samtools index '+bam_file.replace('.bam','.sort.bam') # command to index bam file 
+    sam_to_bam = 'samtools view -Sb '+sam_file+' > '+bam_file # command to convert sam file to bam file 
+    sort_bam = 'samtools sort '+bam_file+' -o '+bam_file.replace('.bam','.sort.bam') # command to sort bam file 
+    index_bam = 'samtools index '+bam_file.replace('.bam','.sort.bam') # command to index bam file 
     bam_files.append(bam_file.replace('.bam','.sort.bam')) # append indexed & sorted bam file to list
     os.system(sam_to_bam) # os call to run sam_to_bam command
     os.system(sort_bam) # os call to run sort_bam command
@@ -180,12 +186,12 @@ for bam_file in bam_files: # for each bam file stored in bam_files
     reference_name = bam_file[bam_file.find('mappedto_')+len('mappedto_'):bam_file.find('.sort.bam')]+'.fasta' # get the correct reference file name
     if not os.path.exists(reference_name): # in case the reference fasta file does not end with .fasta
         reference_name = bam_file[bam_file.find('mappedto_')+len('mappedto_'):bam_file.find('.sort.bam')]+'.fa' # change it to .fa
-    mpileup_command = './samtools-1.9/samtools mpileup -f '+reference_name+' '+bam_file+' > '+bam_file.replace('.sort.bam','.mpileup') # create mpileup command 
+    mpileup_command = 'samtools mpileup -f '+reference_name+' '+bam_file+' > '+bam_file.replace('.sort.bam','.mpileup') # create mpileup command 
     os.system(mpileup_command) # os call to run mpileup command
     
 # run flagstat
 for bam_file in bam_files: # for each bam file stored in bam_files
-    flagstat_command = './samtools-1.9/samtools flagstat '+bam_file+' > '+bam_file.replace('.sort.bam','.flagstat') # create the samtools flagstat command
+    flagstat_command = 'samtools flagstat '+bam_file+' > '+bam_file.replace('.sort.bam','.flagstat') # create the samtools flagstat command
     os.system(flagstat_command) #write command out to os.system
 
 ### SUMMARIZING SAMTOOLS RESULTS ###
@@ -198,7 +204,7 @@ for item in fasta_files: # for each reference file
         reference_sizes[sequence.id[:sequence.id.find('.')]]=len(str(sequence.seq)) # add to dictionary reference id as key, sequence length as value
 
 # initialize final output file
-summarized_output = open('IsItI_results.csv', 'w') # create and open file
+summarized_output = open(results_dir+'/IsItI_results.csv', 'w') # create and open file
 summarized_output.write('Sample,Reference,Reads in Sample,Reads Mapped to Reference,Average Coverage (reads/nt)\n') # write file header
 
 for sample in sample_to_reference: # for each sample
